@@ -1,0 +1,30 @@
+# Core dependencies
+sqlglot>=20.0.0
+pyarrow>=14.0.0
+pandas>=2.0.0
+
+# Execution backends
+duckdb>=0.9.0
+polars>=0.19.0
+pyspark>=3.5.0
+
+# CLI
+click>=8.1.0
+rich>=13.0.0
+tabulate>=0.9.0
+
+# Caching
+cachetools>=5.3.0
+
+# System utilities
+psutil>=5.9.0
+
+# Development
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+ruff>=0.1.0
+mypy>=1.7.0
+
+# Testing utilities
+faker>=20.0.0
