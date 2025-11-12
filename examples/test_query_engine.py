@@ -201,6 +201,58 @@ def test_context_manager():
         console.print(f"Backend: {result.backend_used.value}")
         console.print(f"Time: {result.execution_time_sec:.3f}s")
 
+def test_cache_impact():
+    """Test query caching impact on performance."""
+    console.print("\n[bold cyan]Test 6: Cache Impact[/bold cyan]")
+    
+    # Create engine with caching
+    engine = QueryEngine(data_path="./data", enable_cache=True)
+    
+    sql = """
+        SELECT 
+            region,
+            COUNT(*) as transactions,
+            SUM(amount) as total,
+            AVG(amount) as avg
+        FROM sales
+        WHERE date >= '2024-11-01' AND date <= '2024-11-10'
+        GROUP BY region
+        ORDER BY total DESC
+    """
+    
+    console.print("Running same query 3 times to demonstrate caching...\n")
+    
+    times = []
+    for i in range(3):
+        result = engine.execute(sql, schema={"sales": {
+            "date": "DATE",
+            "region": "VARCHAR",
+            "amount": "DECIMAL"
+        }})
+        times.append(result.execution_time_sec)
+        
+        status = "CACHE HIT ✓" if result.from_cache else "CACHE MISS"
+        console.print(f"  Run {i+1}: {result.execution_time_sec:.4f}s - {status}")
+    
+    # Show cache stats
+    stats = engine.cache_stats()
+    
+    console.print(f"\n[bold]Cache Statistics:[/bold]")
+    stats_table = Table(show_header=False)
+    stats_table.add_column("Metric", style="cyan")
+    stats_table.add_column("Value", style="green")
+    
+    stats_table.add_row("Cache Size", f"{stats['size']}/{stats['max_size']}")
+    stats_table.add_row("Hit Rate", f"{stats['hit_rate']:.1%}")
+    stats_table.add_row("Total Hits", str(stats['hits']))
+    stats_table.add_row("Total Misses", str(stats['misses']))
+    
+    console.print(stats_table)
+    
+    if len(times) >= 2 and times[1] > 0:
+        speedup = times[0] / times[1]
+        console.print(f"\n[bold green]Cache provides {speedup:.0f}x speedup![/bold green]")
+
 
 def main():
     """Run all query engine tests."""
@@ -215,24 +267,13 @@ def main():
         test_explain_query()
         test_top_spenders()
         test_context_manager()
+        test_cache_impact()
         
         console.print("\n[bold green]" + "=" * 60 + "[/bold green]")
         console.print("[bold green]✓ ALL TESTS PASSED! Query Engine is working![/bold green]")
         console.print("[bold green]" + "=" * 60 + "[/bold green]")
         
         console.print("\n[bold cyan]🎉 Your intelligent query router is now functional![/bold cyan]")
-        console.print("\n[bold]What you have:")
-        console.print("  ✅ Partition pruning (50-100x speedups)")
-        console.print("  ✅ Cost-based backend selection")
-        console.print("  ✅ Query execution on DuckDB")
-        console.print("  ✅ Query explanation (EXPLAIN)")
-        console.print("  ✅ End-to-end orchestration")
-        
-        console.print("\n[bold]Next steps:")
-        console.print("  1. Add query caching")
-        console.print("  2. Build CLI tool")
-        console.print("  3. Add Polars/Spark backends")
-        console.print("  4. Write comprehensive tests")
         
     except FileNotFoundError as e:
         console.print(f"\n[bold red]Error:[/bold red] {e}")
