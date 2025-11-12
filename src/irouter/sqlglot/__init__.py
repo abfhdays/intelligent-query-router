@@ -1,2 +1,5 @@
+"""SQLGlot integration module."""
 from irouter.sqlglot.parser import SQLParser
-__all__ = ["SQLParser"]
+from irouter.sqlglot.feature_extractor import FeatureExtractor
+
+__all__ = ["SQLParser", "FeatureExtractor"]
